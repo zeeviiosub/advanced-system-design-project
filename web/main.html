@@ -1,8 +1,16 @@
 <html>
+    <head>
+        <title>Man-Machine Interface -- Main Page</title>
+        <script language="javascript">
+            function go() {
+                window.location.href = './' + userId.value
+            }
+        </script>
+    </head>
     <body>
         <form>
-            <input type="text"></input>
-            <input type="submit"></input>
+            <input id="userId" type="text" value="User ID"></input>
+            <button type="button" onclick="go()">Go!</input>
         </form>
     </body>
 </html>
