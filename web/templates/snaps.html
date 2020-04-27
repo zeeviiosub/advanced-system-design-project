@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <title>{{ title }}</title>
+    </head>
+    <body>
+        <table>
+            {% for snapshot in snapshots: %}
+            <tr><td>
+                <a href="/{{ user_id }}/{{ snapshot }}">{{ snapshot }}</a>
+            </td></tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

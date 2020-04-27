@@ -79,28 +79,6 @@ class Handler(threading.Thread):
         os.mdirs(context.directory, exist_ok=True)
         for field in parsers:
             parsers[field](context, snapshot)
-#        user_id_bytes = self.connection.receive(8)
-#        timestamp_bytes = self.connection.receive(8)
-#        thought_sz_bytes = self.connection.receive(4)
-#        thought_sz = int.from_bytes(thought_sz_bytes, 'little')
-#        thought_bytes = self.connection.receive(thought_sz)
-#        self.connection.close()
-#        thought = Thought.deserialize(
-#            user_id_bytes+timestamp_bytes+thought_sz_bytes+thought_bytes)
-#        Handler.lock.acquire()
-#        try:
-#            user_dir = self.data_dir.joinpath(str(thought.user_id))
-#            if not user_dir.exists():
-#                user_dir.mkdir()
-#            output_file = user_dir.joinpath(
-#                thought.timestamp.strftime('%Y-%m-%d_%H-%M-%S') + '.txt')
-#            if output_file.exists():
-#                open(str(output_file), 'a').write('\n' + thought.thought)
-#            else:
-#                open(str(output_file), 'w').write(thought.thought)
-#        finally:
-#            Handler.lock.release()
-#
 
 def server_iteration(listener, data):
     client = listener.accept()

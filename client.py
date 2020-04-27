@@ -1,5 +1,5 @@
 from cli import CommandLineInterface
-from connection import Connection
+from utils.connection import Connection
 from thought import Thought
 from datetime import datetime
 import protocol
