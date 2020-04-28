@@ -4,6 +4,10 @@ import snaplist
 
 app = Flask(__name__)
 
+@app.route('/')
+def main_page():
+    return render_template('main.html')
+
 @app.route('/<user_id>')
 def user_page(user_id):
     snaps = snaplist.snapshots_list(user_id)
