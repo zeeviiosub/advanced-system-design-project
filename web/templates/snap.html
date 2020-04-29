@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title>{{ title }}</title>
+    </head>
+    <body>
+        <table>
+            <tr><td><img src="{{ color_image_url }}"></td></tr>
+            <tr><td><img src="{{ depth_image_url }}"></td></tr>
+            <tr>
+                <td>Translation:</td>
+                <td>{{ translation_x }}</td>
+                <td>{{ translation_y }}</td>
+                <td>{{ translation_z }}</td>
+            </tr>
+            <tr>
+                <td>Rotation:</td>
+                <td>{{ rotation_x }}</td>
+                <td>{{ rotation_y }}</td>
+                <td>{{ rotation_z }}</td>
+                <td>{{ rotation_w }}</td>
+            </tr>
+            <tr>
+                <td>Hunger: {{ hunger }}</td>
+                <td>Thirst: {{ thirst }}</td>
+                <td>Exhaustion: {{ exhaustion }}</td>
+                <td>Happiness: {{ happiness }}</td>
+            </tr>
+        </table>
+    </body>
+</html>
