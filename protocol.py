@@ -12,8 +12,8 @@ class Hello:
         user_id_bytes = self.user_id.to_bytes(8, 'little')
         username_bytes = self.username.encode('utf8')
         username_len_bytes = len(username_bytes).to_bytes(4, 'little')
-        birth_date_bytes = int(self.birth_date.timestamp()).to_bytes(4, 'little')
-        gender_byte = self.gender.encode('utf8')
+        birth_date_bytes = int(self.birth_date).to_bytes(4, 'little')
+        gender_byte = int(self.gender).to_bytes(1, 'little')
         return user_id_bytes + birth_date_bytes + gender_byte + \
             username_len_bytes + username_bytes
 
