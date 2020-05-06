@@ -1,12 +1,13 @@
 import threading
 import pathlib
 from cli import CommandLineInterface
-from listener import Listener
+from utils.listener import Listener
 from thought import Thought
 from protocol import Hello, Config, Snapshot
 from PIL import Image
 import cortex_pb2
 import json
+import pika
 from multiprocessing import Process
 
 cli = CommandLineInterface()
@@ -63,12 +64,14 @@ class Handler(threading.Thread):
         self.connection = connection
         self.data_dir = data_dir
 
-    def run_server(self):
+    def run(self):
         import os
+        import time
         hello_bytes = self.connection.receive_message()
         hello = Hello.deserialize(hello_bytes)
-        config = Config(['timestamp', 'translation', 'rotation', \
-            'color_image', 'depth_image', 'feelings'])
+        config = Config('timestamp', 'translation', 'rotation',
+            'color_image', 'depth_image', 'feelings')
+        time.sleep(6)
         self.connection.send_message(config.serialize())
         snapshot_bytes = self.connection.receive_message()
         snapshot = Snapshot.deserialize(snapshot_bytes)
@@ -77,22 +80,37 @@ class Handler(threading.Thread):
         context.directory = self.data_dir / str(hello.user_id) / \
             str(snapshot.datetime)
         os.mdirs(context.directory, exist_ok=True)
+        params = pika.ConnectionParameters('localhost')
+        connection = pika.BlockingConnection(params)
+        channel = connection.channel()
         for field in parsers:
-            parsers[field](context, snapshot)
+            channel.queue_declare(field)
+            channel.basic_publish(exchange='', routing_key=field,
+                body=snapshot)
+        #for field in parsers:
+        #    parsers[field](context, snapshot)
 
-def server_iteration(listener, data):
+def server_iteration(listener, publish):
     client = listener.accept()
-    handler = Handler(client, data)
+    handler = Handler(client, publish)
     handler.start()
 
+
+#def run_server(host, port, publish):
+#    lsnr = Listener(port, host=host)
+#    lsnr.start()
+#    while True:
+#        p = Process(target=server_iteration, args=(lsnr, publish))
+#        p.start()
+#        p.join()
+
 @cli.command
-def run_server(address, data):
-    address = (address.split(':')[0], int(address.split(':')[1]))
-    data = pathlib.Path(data)
-    lsnr = Listener(address[1], host=address[0])
+def run_server(host, port, publish=print):
+    lsnr = Listener(host=host, port=int(port))
     lsnr.start()
     while True:
-        p = Process(target=server_iteration, args=(lsnr, data))
+        p = Process(target=server_iteration,
+            args=(lsnr, publish))
         p.start()
         p.join()
 

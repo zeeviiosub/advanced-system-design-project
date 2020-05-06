@@ -18,25 +18,26 @@ def upload_thought(address, file_name):
         s = socket.socket()
         s.connect(address)
         conn = Connection(s)
-        with reader.Reader(file_name) as r:
-            for s in r:
-                hello = protocol.Hello(r.user_id, r.username, r.birth_date, r.gender)
-                conn.send(hello.serialize())
-                config = protocol.Config.deserialize(connection.receive_message())
-                snapshot = protocol.Snapshot()
-                if 'translation' in config.fields:
-                    snapshot.translation = s.pose.translation
-                if 'rotation' in config.fields:
-                    snapshot.rotation = s.pose.rotation
-                if 'color_image' in config.fields:
-                    snapshot.color_image = s.color_image
-                if 'depth_image' in config.fields:
-                    snapshot.depth_image = s.depth_image
-                if 'feelings' in config.fields:
-                    snapshot.hunger, snapshot.thirst, snapshot.exhuastion, \
-                    snapshot.happiness = s.feelings
-                conn.send(snapshot.serialize())
-
+        r = reader.Reader(file_name)
+        for s in r:
+            hello = protocol.Hello(r.user.user_id,
+                r.user.username, r.user.birthday, r.user.gender)
+            conn.send(hello.serialize())
+            config = protocol.Config.deserialize(conn.receive_message())
+            snapshot = protocol.Snapshot()
+            if 'translation' in config.fields:
+                snapshot.translation = s.pose.translation
+            if 'rotation' in config.fields:
+                snapshot.rotation = s.pose.rotation
+            if 'color_image' in config.fields:
+                snapshot.color_image = s.color_image
+            if 'depth_image' in config.fields:
+                snapshot.depth_image = s.depth_image
+            if 'feelings' in config.fields:
+                snapshot.hunger, snapshot.thirst, snapshot.exhuastion, \
+                snapshot.happiness = s.feelings
+            conn.send(snapshot.serialize())
+        config_bytes = conn.receive_message()
         thought_obj = \
             Thought(user, datetime.fromtimestamp(int(time.time())), thought)
         conn.send(thought_obj.serialize())
