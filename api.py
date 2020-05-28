@@ -2,6 +2,7 @@ import click
 import flask
 import redis
 import protocol
+import json
 
 app = flask.Flask(__name__)
 
@@ -72,31 +73,33 @@ def handle_result_name(user_id, snapshot_id, result_name):
     try:
         request = flask.request.json
         r = redis.Redis()
-        data = r.hget(f'{user_id}.{result_name}', snapshot_id)\
+        data = r.hget(snapshot_id, f'{user_id}.{result_name}')\
             .decode('utf8')
-        if result_name == 'pose':
-            trans_x, trans_y, trans_z, rot_x, rot_y, rot_z, rot_w = \
-                data.split(' ')
-            trans_x = float(trans_x)
-            trans_y = float(trans_y)
-            trans_z = float(trans_z)
-            rot_x = float(rot_x)
-            rot_y = float(rot_y)
-            rot_z = float(rot_z)
-            rot_w = float(rot_w)
-            result = (trans_x, trans_y, trans_z, rot_x, rot_y, rot_z, \
-                rot_w)
-        elif result_name == 'color-image':
-            result = data
-        elif result_name == 'depth-image':
-            result = data
-        elif result_name == 'feelings':
-            hunger, thirst, exhaustion, happiness = data.split(' ')
-            hunger = float(hunger)
-            thirst = float(thirst)
-            exhaustion = float(exhaustion)
-            happiness = float(happiness)
-            result = (hunger, thirst, exhaustion, happiness)
+        result = json.loads(data)
+        #if result_name == 'pose':
+        #    result = json.loads(data)
+        #    trans_x, trans_y, trans_z, rot_x, rot_y, rot_z, rot_w = \
+        #        data.split(' ')
+        #    trans_x = float(trans_x)
+        #    trans_y = float(trans_y)
+        #    trans_z = float(trans_z)
+        #    rot_x = float(rot_x)
+        #    rot_y = float(rot_y)
+        #    rot_z = float(rot_z)
+        #    rot_w = float(rot_w)
+        #    result = (trans_x, trans_y, trans_z, rot_x, rot_y, rot_z, \
+        #        rot_w)
+        #elif result_name == 'color-image':
+        #    result = data
+        #elif result_name == 'depth-image':
+        #    result = data
+        #elif result_name == 'feelings':
+        #    hunger, thirst, exhaustion, happiness = data.split(' ')
+        #    hunger = float(hunger)
+        #    thirst = float(thirst)
+        #    exhaustion = float(exhaustion)
+        #    happiness = float(happiness)
+        #    result = (hunger, thirst, exhaustion, happiness)
         return flask.jsonify({'result': result, 'error': None})
     except Exception as error:
         return flask.jsonify({'result': None, 'error': error})
