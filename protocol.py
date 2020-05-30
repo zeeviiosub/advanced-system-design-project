@@ -43,7 +43,6 @@ class Config:
     def serialize(self):
         data = len(self.fields).to_bytes(4, 'little')
         for field in self.fields:
-            print(f'THE FIELD IS {field}')
             field_bytes = field.encode('utf8')
             data = data + len(field_bytes).to_bytes(4, 'little')
             data = data + field_bytes
@@ -96,7 +95,8 @@ class Snapshot:
         else:
             height = self.depth_image.height
             data = data + height.to_bytes(4, 'little')
-            data = data + self.depth_image.data
+            for datum in self.depth_image.data:
+                data = data + struct.pack('f', datum)
         
         data = data + struct.pack('ffff', self.hunger, self.thirst,
             self.exhaustion, self.happiness)
@@ -108,7 +108,6 @@ class Snapshot:
         snapshot.rotation = struct.unpack('dddd', data[32:64])
         snapshot.color_image.width = int.from_bytes(data[64:68], 'little')
         snapshot.color_image.height = int.from_bytes(data[68:72], 'little')
-        print(data[72:72+snapshot.color_image.width*snapshot.color_image.height*3])
 
         snapshot.color_image.data = \
             data[72:72+snapshot.color_image.width*snapshot.color_image.height*3]
@@ -118,8 +117,8 @@ class Snapshot:
         snapshot.depth_image.height = int.from_bytes(data[next_byte+4:next_byte+8], 'little')
         for i in range(snapshot.depth_image.width*snapshot.depth_image.height):
             snapshot.depth_image.data.append(
-                struct.unpack('f', data[next_byte+8+i*4:next_byte+8+i*4+4]
-            ))
+                struct.unpack('f', data[next_byte+8+i*4:next_byte+8+i*4+4])[0]
+            )
         next_byte = \
             next_byte + 8 + \
             snapshot.depth_image.width*snapshot.depth_image.height*4

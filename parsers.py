@@ -3,7 +3,7 @@ import pathlib
 from cli import CommandLineInterface
 from utils.listener import Listener
 from thought import Thought
-from protocol import Hello, Config, Snapshot, deserializers
+from protocol import Hello, Config, Snapshot
 from PIL import Image
 import cortex_pb2
 import json
@@ -57,8 +57,8 @@ def parse_depth_image(context, snapshot_bytes):
 def parse_feelings(context, snapshot_bytes):
     snapshot = Snapshot.deserialize(snapshot_bytes)
     return {'hunger': snapshot.hunger,
-            'thirst': snasphot.thirst,
-            'exhaustion': snasphot.exhaustion,
+            'thirst': snapshot.thirst,
+            'exhaustion': snapshot.exhaustion,
             'happiness': snapshot.happiness}
     #struct.pack('ffff',
      #   snapshot.hunger,
@@ -131,14 +131,14 @@ class Context:
 
 def callback(field):
     def callback_method(channel, method, properties, body):
-        
+        #print('PARSERS:  received message')
         context = Context(int.from_bytes(body[0:8], 'little'))
         result = parsers[field](context, body[16:])
         params = pika.ConnectionParameters('localhost')
         connection = pika.BlockingConnection(params)
         new_channel = connection.channel()
         new_channel.queue_declare(f'save {field}')
-        print(f'sending on save {field}')
+        #print(f'PARSERS:  sending on save {field}')
         json_to_send = json.dumps({'user_id': context.user_id,
                                    'timestamp': int.from_bytes(body[8:16], 'little'),
                                    'data': result})
@@ -146,7 +146,7 @@ def callback(field):
             exchange='',
             routing_key=f'save_{field}',
             body=json_to_send)
-        print(f'published "{json_to_send}" to save_{field}')
+        #print(f'PARSERS:  published "{json_to_send}" to save_{field}')
     return callback_method
 
 @cli.command
@@ -155,7 +155,7 @@ def run_parser(field, queue_address):
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.queue_declare(queue=field)
-    print('consuming on parsers')
+    #print('PARSERS:  consuming on parsers')
     channel.basic_consume(
         queue=field,
         auto_ack=True,

@@ -38,20 +38,13 @@ class Handler(threading.Thread):
         import time
         
         # Receive hello message
-        print('receiving hello message')
         hello_bytes = self.connection.receive_message()
-        print(f'received hello message: {hello_bytes}')
         hello = Hello.deserialize(hello_bytes)
         
         # Send config message
-        print('sending config message')
-        #config = Config('timestamp', 'translation', 'rotation',
-        #    'color_image', 'depth_image', 'feelings')
-        #fields = ['pose', 'color_image', 'depth_image', 'feelings']
-        fields = ['feelings']
+        fields = ['pose', 'color_image', 'depth_image', 'feelings']
         config = Config(*fields)
         self.connection.send_message(config.serialize())
-        print('config message sent')
 
 
         #context = object()
@@ -67,10 +60,8 @@ class Handler(threading.Thread):
         
         # Receive snapshot message
         snapshot_bytes = self.connection.receive_message()
-        print(f'received snapshot message: {snapshot_bytes}')
         snapshot = Snapshot.deserialize(snapshot_bytes)
         self.connection.close()
-        print('closed connection')
 
         self.save_color_image(hello, snapshot)
         self.save_depth_image(hello, snapshot)
@@ -80,7 +71,6 @@ class Handler(threading.Thread):
             
         for field in fields:
             channel.queue_declare(field)
-            print(f'sending on {field}: {snapshot.serialize()}')
             data_to_send = hello.user_id.to_bytes(8, 'little') + \
                 snapshot.timestamp.to_bytes(8, 'little') + \
                 snapshot.serialize()
@@ -94,15 +84,9 @@ def server_iteration(listener, publish):
     handler.start()
 
 @cli.command
-def do_something(foo, bar):
-    print('doing something')
-
-@cli.command
 def run_server(host, port, publish=print):
-    print('entering server')
     lsnr = Listener(host=host, port=int(port))
     lsnr.start()
-    print('entering loop')
     while True:
         server_iteration(lsnr, publish)
 
