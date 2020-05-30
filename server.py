@@ -40,28 +40,19 @@ class Handler(threading.Thread):
         # Receive hello message
         print('receiving hello message')
         hello_bytes = self.connection.receive_message()
-        print('received hello message')
+        print('received hello message: {hello_bytes}')
         hello = Hello.deserialize(hello_bytes)
         
         # Send config message
         print('sending config message')
         #config = Config('timestamp', 'translation', 'rotation',
         #    'color_image', 'depth_image', 'feelings')
-        fields = ['pose', 'color_image', 'depth_image', 'feelings']
+        #fields = ['pose', 'color_image', 'depth_image', 'feelings']
+        fields = ['feelings']
         config = Config(*fields)
         self.connection.send_message(config.serialize())
         print('config message sent')
 
-        # Receive snapshot message
-        snapshot_bytes = self.connection.receive_message()
-        snapshot = Snapshot.deserialize(snapshot_bytes)
-        self.connection.close()
-
-        self.save_color_image(hello, snapshot)
-        self.save_depth_image(hello, snapshot)
-        
-        snapshot.color_image = cortex_pb2.ColorImage()
-        snapshot.depth_image = cortex_pb2.DepthImage()
 
         #context = object()
         #context.directory = self.data_dir + '/' + str(hello.user_id) + '/' + \
@@ -73,6 +64,20 @@ class Handler(threading.Thread):
         channel.queue_declare('hello')
         channel.basic_publish(exchange='', routing_key='hello',
             body=hello.serialize())
+        
+        # Receive snapshot message
+        snapshot_bytes = self.connection.receive_message()
+        print('received snapshot message: {snapshot_bytes}')
+        snapshot = Snapshot.deserialize(snapshot_bytes)
+        self.connection.close()
+        print('closed connection')
+
+        self.save_color_image(hello, snapshot)
+        self.save_depth_image(hello, snapshot)
+        
+        snapshot.color_image = cortex_pb2.ColorImage()
+        snapshot.depth_image = cortex_pb2.DepthImage()
+            
         for field in fields:
             channel.queue_declare(field)
             print(f'sending on {field}: {snapshot.serialize()}')
