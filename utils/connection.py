@@ -34,8 +34,15 @@ class Connection:
         return data
 
     def send_message(self, data):
-        self.socket.sendall(len(data).to_bytes(8, 'little'))
-        self.socket.sendall(data)
+        try:
+            self.socket.sendall(len(data).to_bytes(8, 'little'))
+        except BrokenPipeError:
+            pass
+        try:
+            self.socket.sendall(data)
+        except BrokenPipeError:
+            pass
+        print(f'sent {data}')
 
     def receive_message(self):
         size = int.from_bytes(self.socket.recv(8), 'little')
@@ -45,6 +52,7 @@ class Connection:
             if not more_data:
                 raise Exception('Incomplete message')
             data += more_data
+        print(f'received {data}')
         return data
 
     def close(self):

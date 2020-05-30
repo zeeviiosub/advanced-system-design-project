@@ -40,7 +40,7 @@ class Handler(threading.Thread):
         # Receive hello message
         print('receiving hello message')
         hello_bytes = self.connection.receive_message()
-        print('received hello message: {hello_bytes}')
+        print(f'received hello message: {hello_bytes}')
         hello = Hello.deserialize(hello_bytes)
         
         # Send config message
@@ -67,7 +67,7 @@ class Handler(threading.Thread):
         
         # Receive snapshot message
         snapshot_bytes = self.connection.receive_message()
-        print('received snapshot message: {snapshot_bytes}')
+        print(f'received snapshot message: {snapshot_bytes}')
         snapshot = Snapshot.deserialize(snapshot_bytes)
         self.connection.close()
         print('closed connection')
@@ -93,17 +93,18 @@ def server_iteration(listener, publish):
     handler = Handler(client, '.', publish)
     handler.start()
 
-
+@cli.command
+def do_something(foo, bar):
+    print('doing something')
 
 @cli.command
 def run_server(host, port, publish=print):
+    print('entering server')
     lsnr = Listener(host=host, port=int(port))
     lsnr.start()
+    print('entering loop')
     while True:
-        p = Process(target=server_iteration,
-            args=(lsnr, publish))
-        p.start()
-        p.join()
+        server_iteration(lsnr, publish)
 
 
 if __name__ == '__main__':
