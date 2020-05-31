@@ -39,6 +39,7 @@ def upload_thought(address, file_name):
                 config = protocol.Config.deserialize(conn.receive_message())
 
                 # Send snapshot message
+                print(s.datetime)
                 snapshot = protocol.Snapshot(s.datetime)
                 if 'pose' in config.fields and s.pose:
                     snapshot.translation = (
@@ -65,7 +66,7 @@ def upload_thought(address, file_name):
                 #awerqwerq245v ase rq24
                 i = i + 1
                 print(i)
-                if i == 10:
+                if i == 1:
                     break
             except Exception as e:
                 raise e

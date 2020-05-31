@@ -47,10 +47,6 @@ class Handler(threading.Thread):
         self.connection.send_message(config.serialize())
 
 
-        #context = object()
-        #context.directory = self.data_dir + '/' + str(hello.user_id) + '/' + \
-        #    str(snapshot.timestamp)
-        #os.mdirs(context.directory, exist_ok=True)
         params = pika.ConnectionParameters('localhost')
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
@@ -68,12 +64,19 @@ class Handler(threading.Thread):
         
         snapshot.color_image = cortex_pb2.ColorImage()
         snapshot.depth_image = cortex_pb2.DepthImage()
-            
+        
+        channel.queue_declare('user')
+        data_to_send = hello.serialize()
+        print(f'sending {data_to_send} to user parser')
+        channel.basic_publish(exchange='', routing_key='user',
+            body=data_to_send)
+
         for field in fields:
             channel.queue_declare(field)
             data_to_send = hello.user_id.to_bytes(8, 'little') + \
                 snapshot.timestamp.to_bytes(8, 'little') + \
                 snapshot.serialize()
+            print(f'sending {data_to_send} to {field}')
             channel.basic_publish(exchange='', routing_key=field,
                 body=data_to_send)
 

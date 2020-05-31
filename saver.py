@@ -12,12 +12,38 @@ class Saver:
     def __init__(self, db_url):
         self.r = redis.from_url(db_url)
 
-    def save(self, field, data_as_json_string):
+    def save_field(self, field, data_as_json_string):
         data = json.loads(data_as_json_string)
         user_id = data['user_id']
         timestamp = data['timestamp']
         real_data = data['data']
-        self.r.hset(timestamp, f'{user_id}.{field}', json.dumps(real_data))
+        
+        fields_array = self.r.hget(f'{user_id}.fields', timestamp)
+        if fields_array:
+            fields_array = json.loads(fields_array.decode('utf8'))
+            if field not in fields_array:
+                fields_array.append(field)
+        else:
+            fields_array = [field]
+
+        snapshots_array = self.r.hget('snapshots', user_id)
+        if snapshots_array:
+            snapshots_array = json.loads(snapshots_array.decode('utf8'))
+            if timestamp not in snapshots_array:
+                snapshots_array.append(timestamp)
+        else:
+            snapshots_array = [timestamp]
+        print(f'setting "snapshots" {user_id} to {json.dumps(snapshots_array)}')
+        self.r.hset('snapshots', user_id, json.dumps(snapshots_array))
+        self.r.hset(f'{user_id}.fields', timestamp, json.dumps(fields_array))
+        self.r.hset(f'{user_id}.{field}', timestamp, json.dumps(real_data))
+
+    def save_user(self, data_as_json_string):
+        data = json.loads(data_as_json_string)
+        user_id = data['user_id']
+        print(f'saving {user_id}: {data_as_json_string}')
+        self.r.hset('user', user_id, data_as_json_string)
+        
 
 @main.command()
 @click.option('--database', default='redis://localhost')
@@ -25,12 +51,16 @@ class Saver:
 @click.argument('data')
 def save(database, topic_name, data):
     saver = Saver(db_url)
-    saver.save(topic_name, data)
+    saver.save_field(topic_name, data)
 
 def callback(db_url, field):
     def callback_method(channel, method, properties, body):
         saver = Saver(db_url)
-        saver.save(field, body)
+        print(method.routing_key)
+        if method.routing_key == 'save_user':
+            saver.save_user(body)
+        else:
+            saver.save_field(field, body)
     return callback_method
 
 @main.command()
