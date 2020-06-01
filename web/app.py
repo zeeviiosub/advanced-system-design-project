@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import render_template
 import utils
+import datetime
 
 app = Flask(__name__)
 
@@ -14,19 +15,32 @@ def main_page():
 
 @app.route('/<user_id>')
 def user_page(user_id):
+    user = utils.user(user_id)
+    username = user['username']
+    birth_date = user['birth_date']
+    gender = user['gender']
     snaps = utils.snapshots_list(user_id)
-    return render_template('snaps.html', title=f"{user_id}'s snapshots", \
-        user_id=user_id, snapshots=snaps)
+    return render_template(
+        'snaps.html',
+        title=f"{username}'s snapshots",
+        user_id=user_id,
+        snapshots=snaps,
+        username=username,
+        birth_date=str(datetime.datetime.fromtimestamp(birth_date)),
+        gender=gender
+        )
 
 @app.route('/<user_id>/<snapshot_id>')
 def snapshot_page(user_id, snapshot_id):
+    username = utils.user(user_id)['username']
     pose = utils.pose(user_id, snapshot_id)
     feelings = utils.feelings(user_id, snapshot_id)
     color_image = utils.color_image(user_id, snapshot_id)
     depth_image = utils.depth_image(user_id, snapshot_id)
     return render_template(
         'snap.html',
-        title=f"{user_id}'s snapshot {snapshot_id}",
+        title=f"{username}'s snapshot {snapshot_id}",
+        user_id=user_id,
         pose=pose,
         feelings=feelings,
         color_image=color_image,

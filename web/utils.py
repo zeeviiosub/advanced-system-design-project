@@ -6,8 +6,10 @@ URL = f'http://{host_ip}:{port}'
 
 def users_list():
     r = requests.get(f'{URL}/users')
-    print(r)
-    print(r.json())
+    return r.json()['user']
+
+def user(user_id):
+    r = requests.get(f'{URL}/users/{user_id}')
     return r.json()['user']
 
 def snapshots_list(user_id):
