@@ -141,6 +141,7 @@ To run the Web server: `python web/app.py`.
 The main page URL is `http://127.0.0.1:7000/`.
 
 ## Dockers
+```
 zeevi/server
 zeevi/user_parser
 zeevi/pose_parser
@@ -154,3 +155,4 @@ zeevi/color_image_saver
 zeevi/depth_image_saver
 zeevi/api
 zeevi/web
+```
