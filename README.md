@@ -83,25 +83,38 @@ The following packages are provided:
     ```
     
   - `api`
+  
   This is a program that runs on the API server (127.0.0.1:9000).
     ```sh
     $ python api.py
     ```
   
   The API includes the following:
+  
   `GET /users`
+  
   Returns the list of all the supported users, including their IDs and names only.
+  
   `GET /users/user-id`
+  
   Returns the specified user's details: ID, name, birthday and gender.
+  
   `GET /users/user-id/snapshots`
+  
   Returns the list of the specified user's snapshot IDs and datetimes only.
+  
   `GET /users/user-id/snapshots/snapshot-id`
+  
   Returns the specified snapshot's details: ID, datetime, and the available results' names only (e.g. `pose`).
+  
   `GET /users/user-id/snapshots/snapshot-id/result-name`
+  
   Returns the specified snapshot's result.
+  
   The information is returned as a string representing a JSon object. One field is `error` (containing the error message), and the other field is `user`, `user`, `snapshots`, `snapshot` or `result`, respectively, containing the data requested.
   
   - `apicli`
+  
   The API can be invoked through the CLI.
   ```sh
   $ python -m cortex.cli get-users
@@ -117,5 +130,7 @@ $ python -m cortex.cli get-result 1 2 'pose'
 ```
 
 - The Web application.
+
 To run the Web server: `python web/app.py`.
+
 The main page URL is `http://127.0.0.1:7000/`.
