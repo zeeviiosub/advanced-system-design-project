@@ -117,15 +117,15 @@ The following packages are provided:
   
   The API can be invoked through the CLI.
   ```sh
-  $ python -m cortex.cli get-users
+  $ python -m apicli get-users
 …
-$ python -m cortex.cli get-user 1
+$ python -m apicli get-user 1
 …
-$ python -m cortex.cli get-snapshots 1
+$ python -m apicli get-snapshots 1
 …
-$ python -m cortex.cli get-snapshot 1 2
+$ python -m apicli get-snapshot 1 2
 …
-$ python -m cortex.cli get-result 1 2 'pose'
+$ python -m apicli get-result 1 2 'pose'
 …
 ```
 
