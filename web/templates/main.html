@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>Man-Machine Interface -- Main Page</title>
+    </head>
+    <body>
+        <h1>Users</h1>
+        <table>
+            {% for user_id in users: %}
+            <tr><td>
+                <a href="/{{ user_id }}">{{ user_id }}</a> ({{ users[user_id] }})
+            </td></tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

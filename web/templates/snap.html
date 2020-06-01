@@ -4,26 +4,26 @@
     </head>
     <body>
         <table>
-            <tr><td><img src="{{ color_image_url }}"></td></tr>
-            <tr><td><img src="{{ depth_image_url }}"></td></tr>
+            <tr><td><img src="{{ color_image }}"></td></tr>
+            <tr><td><img src="{{ depth_image }}"></td></tr>
             <tr>
                 <td>Translation:</td>
-                <td>{{ translation_x }}</td>
-                <td>{{ translation_y }}</td>
-                <td>{{ translation_z }}</td>
+                <td>{{ pose['translation'][0] }}</td>
+                <td>{{ pose['translation'][1] }}</td>
+                <td>{{ pose['translation'][2] }}</td>
             </tr>
             <tr>
                 <td>Rotation:</td>
-                <td>{{ rotation_x }}</td>
-                <td>{{ rotation_y }}</td>
-                <td>{{ rotation_z }}</td>
-                <td>{{ rotation_w }}</td>
+                <td>{{ pose['rotation'][0] }}</td>
+                <td>{{ pose['rotation'][1] }}</td>
+                <td>{{ pose['rotation'][2] }}</td>
+                <td>{{ pose['rotation'][3] }}</td>
             </tr>
             <tr>
-                <td>Hunger: {{ hunger }}</td>
-                <td>Thirst: {{ thirst }}</td>
-                <td>Exhaustion: {{ exhaustion }}</td>
-                <td>Happiness: {{ happiness }}</td>
+                <td>Hunger: {{ feelings['hunger'] }}</td>
+                <td>Thirst: {{ feelings['thirst'] }}</td>
+                <td>Exhaustion: {{ feelings['exhaustion'] }}</td>
+                <td>Happiness: {{ feelings['happiness'] }}</td>
             </tr>
         </table>
     </body>
