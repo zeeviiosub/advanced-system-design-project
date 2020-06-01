@@ -1,0 +1,20 @@
+mv Dockerfile_pose Dockerfile
+docker build -t pose_parser .
+docker tag pose_parser zeevi/pose_parser:tag
+docker tag pose_parser zeevi/pose_parser:tag
+mv Dockerfile_feelings Dockerfile
+docker build -t feelings_parser .
+docker tag feelings_parser zeevi/feelings_parser:tag
+docker tag feelings_parser zeevi/feelings_parser:tag
+mv Dockerfile_user Dockerfile
+docker build -t user_parser .
+docker tag user_parser zeevi/user_parser:tag
+docker tag user_parser zeevi/user_parser:tag
+mv Dockerfile_color_image Dockerfile
+docker build -t color_image_parser .
+docker tag color_image_parser zeevi/color_image_parser:tag
+docker tag color_image_parser zeevi/color_image_parser:tag
+mv Dockerfile_depth_image Dockerfile
+docker build -t depth_image_parser .
+docker tag depth_image_parser zeevi/depth_image_parser:tag
+docker tag depth_image_parser zeevi/depth_image_parser:tag
