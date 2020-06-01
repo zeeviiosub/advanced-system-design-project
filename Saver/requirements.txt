@@ -1,0 +1,8 @@
+virtualenv
+click
+flask
+redis
+pika
+pillow
+google
+protobuf
