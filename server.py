@@ -1,7 +1,7 @@
+from utils.listener import Listener
 import threading
 import pathlib
 from cli import CommandLineInterface
-from utils.listener import Listener
 from thought import Thought
 from protocol import Hello, Config, Snapshot
 from PIL import Image
@@ -12,6 +12,7 @@ from multiprocessing import Process
 import cortex_pb2
 
 cli = CommandLineInterface()
+data_dir = '/home/user/advanced-system-design-project/web/static'
 
 class Handler(threading.Thread):
     lock = threading.Lock()
@@ -22,10 +23,13 @@ class Handler(threading.Thread):
         self.data_dir = data_dir
 
     def save_color_image(self, hello, snapshot):
-        with open(self.data_dir + '/' + \
-            str(hello.user_id) + '_' + \
-            str(snapshot.timestamp) + '_color.json', 'wb') as writer:
-            writer.write(snapshot.color_image.SerializeToString())
+        image = Image.frombytes('RGB', (snapshot.color_image.width, snapshot.color_image.height),
+            snapshot.color_image.data)
+        image.save(f'{self.data_dir}/{hello.user_id}_{snapshot.timestamp}_color.png', 'png')
+        #with open(self.data_dir + '/' + \
+        #    str(hello.user_id) + '_' + \
+        #    str(snapshot.timestamp) + '_color.json', 'wb') as writer:
+        #    writer.write(snapshot.color_image.SerializeToString())
 
     def save_depth_image(self, hello, snapshot):
         with open(self.data_dir + '/' + \
@@ -57,6 +61,9 @@ class Handler(threading.Thread):
         # Receive snapshot message
         snapshot_bytes = self.connection.receive_message()
         snapshot = Snapshot.deserialize(snapshot_bytes)
+
+        print('server: ', snapshot.timestamp)
+
         self.connection.close()
 
         self.save_color_image(hello, snapshot)
@@ -67,7 +74,7 @@ class Handler(threading.Thread):
         
         channel.queue_declare('user')
         data_to_send = hello.serialize()
-        print(f'sending {data_to_send} to user parser')
+        #print(f'sending {data_to_send} to user parser')
         channel.basic_publish(exchange='', routing_key='user',
             body=data_to_send)
 
@@ -76,14 +83,13 @@ class Handler(threading.Thread):
             data_to_send = hello.user_id.to_bytes(8, 'little') + \
                 snapshot.timestamp.to_bytes(8, 'little') + \
                 snapshot.serialize()
-            print(f'sending {data_to_send} to {field}')
+            #print(f'sending {data_to_send} to {field}')
             channel.basic_publish(exchange='', routing_key=field,
                 body=data_to_send)
 
 def server_iteration(listener, publish):
-    #TODO take real directory
     client = listener.accept()
-    handler = Handler(client, '.', publish)
+    handler = Handler(client, data_dir, publish)
     handler.start()
 
 @cli.command

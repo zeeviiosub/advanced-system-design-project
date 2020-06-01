@@ -6,21 +6,12 @@ import json
 
 app = flask.Flask(__name__)
 
-@click.group()
-def main():
-    pass
-
-@main.command()
-def get_users():
-    handle_users()
-
 @app.route('/users')
 def handle_users():
     try:
         request = flask.request.json
         r = redis.Redis()
         users = r.hgetall('user')
-        print(users)
         users_json = {}
         for key in users:
             users_json[key.decode('utf8')] = json.loads(users[key].decode('utf8'))['username']
@@ -69,7 +60,7 @@ def handle_result_name(user_id, snapshot_id, result_name):
     try:
         request = flask.request.json
         r = redis.Redis()
-        data = r.hget(snapshot_id, f'{user_id}.{result_name}')\
+        data = r.hget(f'{user_id}.{result_name}', snapshot_id)\
             .decode('utf8')
         result = json.loads(data)
         return flask.jsonify({'result': result, 'error': None})

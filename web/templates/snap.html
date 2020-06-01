@@ -6,8 +6,6 @@
     <a href="/{{ user_id }}">Back to user</a><br>
     <body>
         <table>
-            <tr><td><img src="{{ color_image }}"></td></tr>
-            <tr><td><img src="{{ depth_image }}"></td></tr>
             <tr>
                 <td>Translation:</td>
                 <td>{{ pose['translation'][0] }}</td>
@@ -27,6 +25,10 @@
                 <td>Exhaustion: {{ feelings['exhaustion'] }}</td>
                 <td>Happiness: {{ feelings['happiness'] }}</td>
             </tr>
+        </table>
+        <table>
+            <tr><td><img src="{{ color_image }}" /></td></tr>
+            <tr><td><img src="{{ depth_image }}" /></td></tr>
         </table>
     </body>
 </html>

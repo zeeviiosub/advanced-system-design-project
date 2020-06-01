@@ -33,7 +33,7 @@ class Saver:
                 snapshots_array.append(timestamp)
         else:
             snapshots_array = [timestamp]
-        print(f'setting "snapshots" {user_id} to {json.dumps(snapshots_array)}')
+        #print(f'setting "snapshots" {user_id} to {json.dumps(snapshots_array)}')
         self.r.hset('snapshots', user_id, json.dumps(snapshots_array))
         self.r.hset(f'{user_id}.fields', timestamp, json.dumps(fields_array))
         self.r.hset(f'{user_id}.{field}', timestamp, json.dumps(real_data))
@@ -41,7 +41,7 @@ class Saver:
     def save_user(self, data_as_json_string):
         data = json.loads(data_as_json_string)
         user_id = data['user_id']
-        print(f'saving {user_id}: {data_as_json_string}')
+        #print(f'saving {user_id}: {data_as_json_string}')
         self.r.hset('user', user_id, data_as_json_string)
         
 
@@ -56,11 +56,15 @@ def save(database, topic_name, data):
 def callback(db_url, field):
     def callback_method(channel, method, properties, body):
         saver = Saver(db_url)
-        print(method.routing_key)
+        #print(method.routing_key)
         if method.routing_key == 'save_user':
             saver.save_user(body)
         else:
+            #print(f'saving {field} {json.loads(body).timestamp}')
+            print(f'saving {field} before')
             saver.save_field(field, body)
+            print(f'saving {field} after')
+            #print(f'saved {field} {json.loads(body).timestamp}')
     return callback_method
 
 @main.command()

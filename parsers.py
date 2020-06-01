@@ -1,7 +1,6 @@
 import threading
 import pathlib
 from cli import CommandLineInterface
-from utils.listener import Listener
 from thought import Thought
 from protocol import Hello, Config, Snapshot
 from PIL import Image
@@ -12,6 +11,7 @@ import struct
 from multiprocessing import Process
 
 cli = CommandLineInterface()
+image_data_dir = '../../static'
 
 parsers = {}
 def parser(field):
@@ -29,12 +29,12 @@ def parse_pose(context, snapshot_bytes):
 @parser('color_image')
 def parse_color_image(context, snapshot_bytes):
     snapshot = Snapshot.deserialize(snapshot_bytes[16:])
-    return f'{context.user_id}_{snapshot.timestamp}_color_image.json'
+    return f'{image_data_dir}/{context.user_id}_{snapshot.timestamp}_color.png'
 
 @parser('depth_image')
 def parse_depth_image(context, snapshot_bytes):
     snapshot = Snapshot.deserialize(snapshot_bytes[16:])
-    return f'{context.user_id}_{snapshot.timestamp}_depth_image.json'
+    return f'{image_data_dir}/{context.user_id}_{snapshot.timestamp}_depth.json'
 
 @parser('feelings')
 def parse_feelings(context, snapshot_bytes):
@@ -62,19 +62,20 @@ class Context:
 def callback(field):
     def callback_method(channel, method, properties, body):
         context = Context(int.from_bytes(body[0:8], 'little'))
+        if field != 'user':
+            print(f'parsing {field}: ', int.from_bytes(body[8:16], 'little'))
         result = parsers[field](context, body)
         params = pika.ConnectionParameters('localhost')
         connection = pika.BlockingConnection(params)
         new_channel = connection.channel()
         new_channel.queue_declare(f'save_{field}')
-        print('laksdfjalsd')
         if field == 'user':
             json_to_send = json.dumps(result)
         else:
             json_to_send = json.dumps({'user_id': context.user_id,
                                        'timestamp': int.from_bytes(body[8:16], 'little'),
                                        'data': result})
-        print(f'sending {json_to_send} to save_{field}')
+        #print(f'sending {json_to_send} to save_{field}')
         new_channel.basic_publish(
             exchange='',
             routing_key=f'save_{field}',
@@ -88,7 +89,7 @@ def run_parser(field, queue_address):
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.queue_declare(queue=field)
-    print(f'waiting for message on queue {field}')
+    #print(f'waiting for message on queue {field}')
     channel.basic_consume(
         queue=field,
         auto_ack=True,
