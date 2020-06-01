@@ -1,22 +1,24 @@
-from cli import CommandLineInterface
 from utils.connection import Connection
 from thought import Thought
 from datetime import datetime
-import protocol
+import utils.protocol
+import click
 
+@click.group()
+def main():
+    pass
 
-cli = CommandLineInterface()
-
-
-@cli.command
-def upload_thought(address, file_name):
+@main.command()
+@click.option('--host', default='127.0.0.1')
+@click.option('--port', default=8000)
+@click.argument('file_name')
+def upload_sample(host, port, file_name):
     import socket
     import time
     import reader
     try:
-        address = (address.split(':')[0], int(address.split(':')[1]))
+        address = (host, port)
         r = reader.Reader(file_name)
-        #asdfawer a
         i = 0
         for s in r:
             soc = socket.socket()
@@ -31,16 +33,15 @@ def upload_thought(address, file_name):
                     gender = 'f'
                 else: # r.user.gender == 2
                     gender = 'o'
-                hello = protocol.Hello(r.user.user_id,
+                hello = utils.protocol.Hello(r.user.user_id,
                     r.user.username, r.user.birthday, gender)
                 conn.send_message(hello.serialize())
 
                 # Receive config message
-                config = protocol.Config.deserialize(conn.receive_message())
+                config = utils.protocol.Config.deserialize(conn.receive_message())
 
                 # Send snapshot message
-                print(s.datetime)
-                snapshot = protocol.Snapshot(s.datetime)
+                snapshot = utils.protocol.Snapshot(s.datetime)
                 if 'pose' in config.fields and s.pose:
                     snapshot.translation = (
                         s.pose.translation.x,
@@ -63,11 +64,8 @@ def upload_thought(address, file_name):
                     snapshot.exhaustion = s.feelings.exhaustion
                     snapshot.happiness = s.feelings.happiness
                 conn.send_message(snapshot.serialize())
-                #awerqwerq245v ase rq24
                 i = i + 1
                 print(i)
-                if i == 3:
-                    break
             except Exception as e:
                 raise e
             finally:
@@ -82,4 +80,4 @@ def upload_thought(address, file_name):
 
 
 if __name__ == '__main__':
-    cli.main()
+    main()

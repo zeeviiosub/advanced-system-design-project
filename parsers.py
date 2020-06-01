@@ -1,8 +1,8 @@
+import click
 import threading
 import pathlib
-from cli import CommandLineInterface
 from thought import Thought
-from protocol import Hello, Config, Snapshot
+from utils.protocol import Hello, Config, Snapshot
 from PIL import Image
 import cortex_pb2
 import json
@@ -10,8 +10,11 @@ import pika
 import struct
 from multiprocessing import Process
 
-cli = CommandLineInterface()
 image_data_dir = '../../static'
+
+@click.group()
+def main():
+    pass
 
 parsers = {}
 def parser(field):
@@ -61,29 +64,30 @@ class Context:
 
 def callback(field):
     def callback_method(channel, method, properties, body):
-        context = Context(int.from_bytes(body[0:8], 'little'))
-        if field != 'user':
-            print(f'parsing {field}: ', int.from_bytes(body[8:16], 'little'))
-        result = parsers[field](context, body)
-        params = pika.ConnectionParameters('localhost')
-        connection = pika.BlockingConnection(params)
-        new_channel = connection.channel()
-        new_channel.queue_declare(f'save_{field}')
-        if field == 'user':
-            json_to_send = json.dumps(result)
-        else:
-            json_to_send = json.dumps({'user_id': context.user_id,
-                                       'timestamp': int.from_bytes(body[8:16], 'little'),
-                                       'data': result})
-        #print(f'sending {json_to_send} to save_{field}')
-        new_channel.basic_publish(
-            exchange='',
-            routing_key=f'save_{field}',
-            body=json_to_send)
-
+        try:
+            context = Context(int.from_bytes(body[0:8], 'little'))
+            result = parsers[field](context, body)
+            params = pika.ConnectionParameters('localhost')
+            connection = pika.BlockingConnection(params)
+            new_channel = connection.channel()
+            new_channel.queue_declare(f'save_{field}')
+            if field == 'user':
+                json_to_send = json.dumps(result)
+            else:
+                json_to_send = json.dumps({'user_id': context.user_id,
+                                           'timestamp': int.from_bytes(body[8:16], 'little'),
+                                           'data': result})
+            new_channel.basic_publish(
+                exchange='',
+                routing_key=f'save_{field}',
+                body=json_to_send)
+        except Exception:
+            pass
     return callback_method
 
-@cli.command
+@main.command()
+@click.argument('field')
+@click.argument('queue_address')
 def run_parser(field, queue_address):
     params = pika.ConnectionParameters(queue_address)
     connection = pika.BlockingConnection(params)
@@ -99,4 +103,4 @@ def run_parser(field, queue_address):
 
 
 if __name__ == '__main__':
-    cli.main()
+    main()

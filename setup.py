@@ -7,5 +7,6 @@ setup(
     author='Zeevi Iosub',
     description='Advanced System Design project - "man-machine inerface".',
     packages=find_packages(),
+    install_requires = ['virtualenv', 'click', 'flask', 'redis', 'pika', 'pillow', 'google', 'protobuf', 'matplotlib']
     tests_require=['pytest', 'pytest-cov'],
 )

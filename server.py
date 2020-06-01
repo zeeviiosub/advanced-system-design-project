@@ -1,9 +1,8 @@
 from utils.listener import Listener
 import threading
 import pathlib
-from cli import CommandLineInterface
 from thought import Thought
-from protocol import Hello, Config, Snapshot
+from utils.protocol import Hello, Config, Snapshot
 from PIL import Image
 import cortex_pb2
 import json
@@ -12,9 +11,13 @@ from multiprocessing import Process
 import cortex_pb2
 import matplotlib.pyplot
 import numpy
+import click
 
-cli = CommandLineInterface()
 data_dir = '/home/user/advanced-system-design-project/web/static'
+
+@click.group()
+def main():
+    pass
 
 class Handler(threading.Thread):
     lock = threading.Lock()
@@ -23,6 +26,7 @@ class Handler(threading.Thread):
         super().__init__()
         self.connection = connection
         self.data_dir = data_dir
+        self.publish = publish
 
     def save_color_image(self, hello, snapshot):
         image = Image.frombytes('RGB', (snapshot.color_image.width, snapshot.color_image.height),
@@ -47,13 +51,13 @@ class Handler(threading.Thread):
         config = Config(*fields)
         self.connection.send_message(config.serialize())
 
-
-        params = pika.ConnectionParameters('localhost')
-        connection = pika.BlockingConnection(params)
-        channel = connection.channel()
-        channel.queue_declare('hello')
-        channel.basic_publish(exchange='', routing_key='hello',
-            body=hello.serialize())
+        if type(self.publish) == str:
+            params = pika.ConnectionParameters(self.publish)
+            connection = pika.BlockingConnection(params)
+            channel = connection.channel()
+            channel.queue_declare('hello')
+            channel.basic_publish(exchange='', routing_key='hello',
+                body=hello.serialize())
         
         # Receive snapshot message
         snapshot_bytes = self.connection.receive_message()
@@ -69,28 +73,35 @@ class Handler(threading.Thread):
         snapshot.color_image = cortex_pb2.ColorImage()
         snapshot.depth_image = cortex_pb2.DepthImage()
         
-        channel.queue_declare('user')
         data_to_send = hello.serialize()
-        #print(f'sending {data_to_send} to user parser')
-        channel.basic_publish(exchange='', routing_key='user',
-            body=data_to_send)
+        if type(self.publish) != str:
+            self.publish(data_to_send)
+        else:
+            channel.queue_declare('user')
+            channel.basic_publish(exchange='', routing_key='user',
+                body=data_to_send)
 
         for field in fields:
-            channel.queue_declare(field)
             data_to_send = hello.user_id.to_bytes(8, 'little') + \
                 snapshot.timestamp.to_bytes(8, 'little') + \
                 snapshot.serialize()
-            #print(f'sending {data_to_send} to {field}')
-            channel.basic_publish(exchange='', routing_key=field,
-                body=data_to_send)
+            if type(self.publish) != str:
+                self.publish(data_to_send)
+            else:
+                channel.queue_declare(field)
+                channel.basic_publish(exchange='', routing_key=field,
+                    body=data_to_send)
 
 def server_iteration(listener, publish):
     client = listener.accept()
     handler = Handler(client, data_dir, publish)
     handler.start()
 
-@cli.command
-def run_server(host, port, publish=print):
+@main.command()
+@click.option('--host', default='127.0.0.1')
+@click.option('--port', default=8000)
+@click.argument('publish')
+def run_server(host, port, publish):
     lsnr = Listener(host=host, port=int(port))
     lsnr.start()
     while True:
@@ -98,4 +109,4 @@ def run_server(host, port, publish=print):
 
 
 if __name__ == '__main__':
-    cli.main()
+    main()
