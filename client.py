@@ -66,7 +66,7 @@ def upload_thought(address, file_name):
                 #awerqwerq245v ase rq24
                 i = i + 1
                 print(i)
-                if i == 1:
+                if i == 3:
                     break
             except Exception as e:
                 raise e

@@ -34,7 +34,7 @@ def parse_color_image(context, snapshot_bytes):
 @parser('depth_image')
 def parse_depth_image(context, snapshot_bytes):
     snapshot = Snapshot.deserialize(snapshot_bytes[16:])
-    return f'{image_data_dir}/{context.user_id}_{snapshot.timestamp}_depth.json'
+    return f'{image_data_dir}/{context.user_id}_{snapshot.timestamp}_depth.png'
 
 @parser('feelings')
 def parse_feelings(context, snapshot_bytes):

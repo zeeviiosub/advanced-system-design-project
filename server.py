@@ -10,6 +10,8 @@ import json
 import pika
 from multiprocessing import Process
 import cortex_pb2
+import matplotlib.pyplot
+import numpy
 
 cli = CommandLineInterface()
 data_dir = '/home/user/advanced-system-design-project/web/static'
@@ -26,16 +28,11 @@ class Handler(threading.Thread):
         image = Image.frombytes('RGB', (snapshot.color_image.width, snapshot.color_image.height),
             snapshot.color_image.data)
         image.save(f'{self.data_dir}/{hello.user_id}_{snapshot.timestamp}_color.png', 'png')
-        #with open(self.data_dir + '/' + \
-        #    str(hello.user_id) + '_' + \
-        #    str(snapshot.timestamp) + '_color.json', 'wb') as writer:
-        #    writer.write(snapshot.color_image.SerializeToString())
 
     def save_depth_image(self, hello, snapshot):
-        with open(self.data_dir + '/' + \
-            str(hello.user_id) + '_' + \
-            str(snapshot.timestamp) + '_depth.json', 'wb') as writer:
-            writer.write(snapshot.depth_image.SerializeToString())
+        A = numpy.array(snapshot.depth_image.data)
+        A.shape = (snapshot.depth_image.height, snapshot.depth_image.width)
+        matplotlib.pyplot.imsave(f'{self.data_dir}/{hello.user_id}_{snapshot.timestamp}_depth.png', A)
 
     def run(self):
         import os
