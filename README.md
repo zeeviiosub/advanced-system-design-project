@@ -27,6 +27,11 @@
 
 ## Usage
 
+TO RUN EVERYTHING ON THE SERVER SIDE:
+```sh
+$ source run-pipeline.sh
+```
+
 The following packages are provided:
 
 - `client`
@@ -134,3 +139,18 @@ $ python -m apicli get-result 1 2 'pose'
 To run the Web server: `python web/app.py`.
 
 The main page URL is `http://127.0.0.1:7000/`.
+
+## Dockers
+zeevi/server
+zeevi/user_parser
+zeevi/pose_parser
+zeevi/feelings_parser
+zeevi/color_image_parser
+zeevi/depth_image_parser
+zeevi/user_saver
+zeevi/pose_saver
+zeevi/feelings_saver
+zeevi/color_image_saver
+zeevi/depth_image_saver
+zeevi/api
+zeevi/web
