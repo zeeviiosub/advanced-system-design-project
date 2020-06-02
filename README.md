@@ -52,6 +52,7 @@ The following packages are provided:
 - `server`
 
   This package provides the function `run_server`.
+  
     ```pycon
     >>> from server import run_server
     >>> run_server(host='127.0.0.1', port=8000, publish=print_message)
@@ -65,11 +66,14 @@ The following packages are provided:
 
   This package provides the function `run_parser` (the last argument is the queue address).
   In addition for parsers for fields, there is a parser for `user` (the user data).
+  
     ```pycon
     >>> from parsers import run_parser
     >>> run_parser('pose', '127.0.0.1')
     ```
+    
   It can also be invoked in the command line.
+  
     ```sh
     $ python -m parsers run-parser 'pose' '127.0.0.1'
     ```
