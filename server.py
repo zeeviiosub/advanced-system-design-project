@@ -10,8 +10,9 @@ from multiprocessing import Process
 import matplotlib.pyplot
 import numpy
 import click
+import os
 
-data_dir = '/home/user/advanced-system-design-project/web/static'
+data_dir = os.path.split(os.path.abspath(__file__))[0] + '/web/static'
 
 fields = ['pose', 'color_image', 'depth_image', 'feelings']
 
