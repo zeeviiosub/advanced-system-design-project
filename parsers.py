@@ -1,14 +1,14 @@
 import click
 import threading
 import pathlib
-from thought import Thought
 from utils.protocol import Hello, Config, Snapshot
 from PIL import Image
-import cortex_pb2
+import utils.cortex_pb2
 import json
 import pika
 import struct
 from multiprocessing import Process
+from urllib.parse import urlparse
 
 image_data_dir = '../../static'
 
@@ -62,12 +62,12 @@ class Context:
         self.user_id = user_id
 
 
-def callback(field):
+def callback(field, queue_address):
     def callback_method(channel, method, properties, body):
         try:
             context = Context(int.from_bytes(body[0:8], 'little'))
             result = parsers[field](context, body)
-            params = pika.ConnectionParameters('localhost')
+            params = pika.ConnectionParameters(queue_address)
             connection = pika.BlockingConnection(params)
             new_channel = connection.channel()
             new_channel.queue_declare(f'save_{field}')
@@ -85,19 +85,30 @@ def callback(field):
             pass
     return callback_method
 
+def parse(field, data):
+    parsers[field](data)
+
+@main.command()
+@click.argument('field')
+@click.argument('path')
+def parse(field, path):
+    with open(path, 'rb') as f:
+        data = f.read()
+    parsers[field](data)
+
 @main.command()
 @click.argument('field')
 @click.argument('queue_address')
 def run_parser(field, queue_address):
+    
     params = pika.ConnectionParameters(queue_address)
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
     channel.queue_declare(queue=field)
-    #print(f'waiting for message on queue {field}')
     channel.basic_consume(
         queue=field,
         auto_ack=True,
-        on_message_callback=callback(field)
+        on_message_callback=callback(field, queue_address)
     )
     channel.start_consuming()
 

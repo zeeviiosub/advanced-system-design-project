@@ -2,12 +2,14 @@ import redis
 import click
 import pika
 import json
+import threading
+from urllib.parse import urlparse
 
 @click.group()
 def main():
     pass
 
-class Saver:
+class Saver():
 
     def __init__(self, db_url):
         self.r = redis.from_url(db_url)
@@ -44,11 +46,13 @@ class Saver:
         
 
 @main.command()
-@click.option('--database', default='redis://localhost')
+@click.option('--database', '-d', default='redis://localhost')
 @click.argument('topic_name')
-@click.argument('data')
-def save(database, topic_name, data):
+@click.argument('path')
+def save(database, topic_name, path):
     saver = Saver(db_url)
+    with open('path', 'rb') as f:
+        data = f.read
     saver.save_field(topic_name, data)
 
 def callback(db_url, field):
@@ -64,21 +68,42 @@ def callback(db_url, field):
             pass
     return callback_method
 
+class SaverThread(threading.Thread):
+    def __init__(self, queue_hostname, database, queue_name):
+        super().__init__()
+        self.queue_name = queue_name
+        self.queue_hostname = queue_hostname
+        self.database = database
+    def run(self):
+        print(f'thread: {self.queue_name}, {self.database}')
+        params = pika.ConnectionParameters(self.queue_hostname)
+        connection = pika.BlockingConnection(params)
+        channel = connection.channel()
+        channel.queue_declare(self.queue_name)
+        channel.basic_consume(queue=self.queue_name,
+                        auto_ack=True,
+                        # the name of the field is the name of the queue without
+                        # the initial 'save_'
+                        on_message_callback=callback(self.database, self.queue_name[5:])) 
+        channel.start_consuming()
+        
+
 @main.command()
-@click.option('--database', default='redis://localhost')
-@click.option('--queue_address', default='localhost')
-@click.argument('queue_name')
-def run_saver(database, queue_address, queue_name):
-    params = pika.ConnectionParameters(queue_address)
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
-    channel.queue_declare(queue_name)
-    channel.basic_consume(queue=queue_name,
-                    auto_ack=True,
-                    # the name of the field is the name of the queue without
-                    # the initial 'save_'
-                    on_message_callback=callback(database, queue_name[5:])) 
-    channel.start_consuming()
+@click.argument('database')
+@click.argument('queue')
+def run_saver(database, queue):
+    queue_url = urlparse(queue)
+    if queue_url.scheme != 'rabbitmq':
+        click.echo('Wrong message queue. Only rabbitmq is supported.')
+    if queue_url.port != 5672:
+        click.echo('Wrong port. The port for rabbitmq is 5672.')
+    threads = {}
+    queue_names = ['save_user', 'save_pose', 'save_feelings', 'save_color_image', 'save_depth_image']
+    for queue_name in queue_names:
+        threads[queue_name] = SaverThread(queue_url.hostname, database, queue_name)
+        threads[queue_name].start()
+    for queue_name in queue_names:
+        threads[queue_name].join()
 
 if __name__ == '__main__':
     main()

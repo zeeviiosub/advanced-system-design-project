@@ -1,23 +1,43 @@
 from utils.listener import Listener
 import threading
 import pathlib
-from thought import Thought
 from utils.protocol import Hello, Config, Snapshot
 from PIL import Image
-import cortex_pb2
+import utils.cortex_pb2
 import json
 import pika
 from multiprocessing import Process
-import cortex_pb2
 import matplotlib.pyplot
 import numpy
 import click
 
 data_dir = '/home/user/advanced-system-design-project/web/static'
 
+fields = ['pose', 'color_image', 'depth_image', 'feelings']
+
+
 @click.group()
 def main():
     pass
+
+def publish_on_queue(queue):
+    def publish_function(hello, snapshot):
+        params = pika.ConnectionParameters(queue)
+        connection = pika.BlockingConnection(params)
+        channel = connection.channel()
+        data_to_send = hello.serialize()
+        channel.queue_declare('user')
+        channel.basic_publish(exchange='', routing_key='user',
+            body=data_to_send)
+        
+        for field in fields:
+            data_to_send = hello.user_id.to_bytes(8, 'little') + \
+                snapshot.timestamp.to_bytes(8, 'little') + \
+                snapshot.serialize()
+            channel.queue_declare(field)
+            channel.basic_publish(exchange='', routing_key=field,
+                body=data_to_send)
+    return publish_function
 
 class Handler(threading.Thread):
     lock = threading.Lock()
@@ -47,18 +67,9 @@ class Handler(threading.Thread):
         hello = Hello.deserialize(hello_bytes)
         
         # Send config message
-        fields = ['pose', 'color_image', 'depth_image', 'feelings']
         config = Config(*fields)
         self.connection.send_message(config.serialize())
 
-        if type(self.publish) == str:
-            params = pika.ConnectionParameters(self.publish)
-            connection = pika.BlockingConnection(params)
-            channel = connection.channel()
-            channel.queue_declare('hello')
-            channel.basic_publish(exchange='', routing_key='hello',
-                body=hello.serialize())
-        
         # Receive snapshot message
         snapshot_bytes = self.connection.receive_message()
         snapshot = Snapshot.deserialize(snapshot_bytes)
@@ -70,42 +81,29 @@ class Handler(threading.Thread):
         self.save_color_image(hello, snapshot)
         self.save_depth_image(hello, snapshot)
         
-        snapshot.color_image = cortex_pb2.ColorImage()
-        snapshot.depth_image = cortex_pb2.DepthImage()
+        snapshot.color_image = utils.cortex_pb2.ColorImage()
+        snapshot.depth_image = utils.cortex_pb2.DepthImage()
         
-        data_to_send = hello.serialize()
-        if type(self.publish) != str:
-            self.publish(data_to_send)
-        else:
-            channel.queue_declare('user')
-            channel.basic_publish(exchange='', routing_key='user',
-                body=data_to_send)
-
-        for field in fields:
-            data_to_send = hello.user_id.to_bytes(8, 'little') + \
-                snapshot.timestamp.to_bytes(8, 'little') + \
-                snapshot.serialize()
-            if type(self.publish) != str:
-                self.publish(data_to_send)
-            else:
-                channel.queue_declare(field)
-                channel.basic_publish(exchange='', routing_key=field,
-                    body=data_to_send)
+        self.publish(hello, snapshot)
 
 def server_iteration(listener, publish):
     client = listener.accept()
     handler = Handler(client, data_dir, publish)
     handler.start()
 
-@main.command()
-@click.option('--host', default='127.0.0.1')
-@click.option('--port', default=8000)
-@click.argument('publish')
-def run_server(host, port, publish):
+def f_run_server(host, port, publish):
     lsnr = Listener(host=host, port=int(port))
     lsnr.start()
     while True:
         server_iteration(lsnr, publish)
+    
+
+@main.command()
+@click.option('--host', default='127.0.0.1')
+@click.option('--port', default=8000)
+@click.argument('queue')
+def run_server(host, port, queue):
+    f_run_server(host, port, publish_on_queue(queue))
 
 
 if __name__ == '__main__':

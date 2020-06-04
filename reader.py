@@ -1,5 +1,5 @@
 from gzip import GzipFile
-from cortex_pb2 import User, Snapshot
+from utils.cortex_pb2 import User, Snapshot
 
 
 

@@ -1,26 +1,25 @@
 from utils.connection import Connection
-from thought import Thought
 from datetime import datetime
 import utils.protocol
 import click
+import time
+import socket
+import reader
 
-@click.group()
-def main():
-    pass
 
-@main.command()
-@click.option('--host', default='127.0.0.1')
-@click.option('--port', default=8000)
-@click.argument('file_name')
-def upload_sample(host, port, file_name):
-    import socket
-    import time
-    import reader
+
+def upload_sample_(host, port, path):
     try:
         address = (host, port)
-        r = reader.Reader(file_name)
+        r = reader.Reader(path)
         i = 0
         for s in r:
+            i = i + 1
+            
+            if i % 150 == 0:
+                click.echo('Pausing ...')
+                time.sleep(3)
+            
             soc = socket.socket()
             soc.connect(address)
             conn = Connection(soc)
@@ -64,7 +63,6 @@ def upload_sample(host, port, file_name):
                     snapshot.exhaustion = s.feelings.exhaustion
                     snapshot.happiness = s.feelings.happiness
                 conn.send_message(snapshot.serialize())
-                i = i + 1
                 print(i)
             except Exception as e:
                 raise e
@@ -77,6 +75,18 @@ def upload_sample(host, port, file_name):
         return 1
     finally:
         print('done')
+
+@click.group()
+def main():
+    pass
+
+@main.command()
+@click.option('--host', '-h', default='127.0.0.1', type=str)
+@click.option('--port', '-p', default=8000)
+@click.argument('path', nargs=1)
+def upload_sample(host, port, path):
+    click.echo('la la la')
+    upload_sample_(host=host, port=port, path=path)
 
 
 if __name__ == '__main__':
