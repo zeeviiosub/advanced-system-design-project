@@ -1,13 +1,13 @@
 from flask import Flask
 from flask import render_template
-import utils
+import web.utils
 import datetime
 
 app = Flask(__name__)
 
 @app.route('/')
 def main_page():
-    users = utils.users_list()
+    users = web.utils.users_list()
     return render_template(
         'main.html',
         users=users
@@ -15,11 +15,11 @@ def main_page():
 
 @app.route('/<user_id>')
 def user_page(user_id):
-    user = utils.user(user_id)
+    user = web.utils.user(user_id)
     username = user['username']
     birth_date = user['birth_date']
     gender = user['gender']
-    snaps = utils.snapshots_list(user_id)
+    snaps = web.utils.snapshots_list(user_id)
     return render_template(
         'snaps.html',
         title=f"{username}'s snapshots",
@@ -32,11 +32,11 @@ def user_page(user_id):
 
 @app.route('/<user_id>/<snapshot_id>')
 def snapshot_page(user_id, snapshot_id):
-    username = utils.user(user_id)['username']
-    pose = utils.pose(user_id, snapshot_id)
-    feelings = utils.feelings(user_id, snapshot_id)
-    color_image = utils.color_image(user_id, snapshot_id)
-    depth_image = utils.depth_image(user_id, snapshot_id)
+    username = web.utils.user(user_id)['username']
+    pose = web.utils.pose(user_id, snapshot_id)
+    feelings = web.utils.feelings(user_id, snapshot_id)
+    color_image = web.utils.color_image(user_id, snapshot_id)
+    depth_image = web.utils.depth_image(user_id, snapshot_id)
     return render_template(
         'snap.html',
         title=f"{username}'s snapshot {snapshot_id}",
