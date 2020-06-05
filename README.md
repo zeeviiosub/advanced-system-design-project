@@ -20,7 +20,7 @@
 3. To check that everything is working as expected, run the tests:
 
 
-    ```sh
+    ``` sh
     $ pytest tests/
     ...
     ```
@@ -29,11 +29,9 @@
 
 TO RUN EVERYTHING ON THE SERVER SIDE:
 
-
-    ```sh
-    $ run_pipeline.sh
-    ```
-
+```sh
+$ run_pipeline.sh
+```
 The following packages are provided:
 
 - `client`
@@ -69,39 +67,50 @@ The following packages are provided:
   This package provides the function `run_parser` (the last argument is the queue address).
   In addition for parsers for fields, there is a parser for `user` (the user data).
   
-    ```pycon
-    >>> from parsers import run_parser
-    >>> run_parser('pose', '127.0.0.1')
-    ```
+  ```pycon
+  >>> from parsers import run_parser
+  >>> run_parser('pose', '127.0.0.1')
+  ```
+  
     
   It can also be invoked in the command line.
   
-    ```sh
-    $ python -m parsers run-parser 'pose' '127.0.0.1'
-    ```
+  ```sh
+  $ python -m parsers parse 'pose' 'snapshot.raw'
+  ```
+  
+  Where `'snapshot.raw'` is a file containing raw data to be parsed. The result is printed to the standard output.
+  
+  
+  It can also be invoked from the command line with a rabbitmq hostname. When invoked in this way, it reads messages from the queue tagged with the field name (e.g., `pose`), and sends the parsed data to the queue with a tag like `save_pose`.
+  
+  ```sh
+  $ python -m parsers run-parser 'pose' '127.0.0.1'
+  ```
   
   
  - `saver`
 
-  This package provides the function `save`.
+  This package provides the function `save`. It reads parsed data from the file (e.g., `pose.result`) and saves the data to the database.
   
-    ```sh
-    $ python -m saver save --database 'redis://localhost' 'pose' $data_as_json_string
-    ```
+  ```sh
+  $ python -m saver save --database 'redis://localhost' 'pose' 'pose.result'
+  ```
+  
   This package also provides the function `run_saver`.
   `$queue_name` is of the form `save_field`, where `field` is either `user` or a field.
   
-    ```sh
-    $ python -m saver run-saver --database 'redis://localhost' --queue_address 'localhost' $queue_name 
-    ```
+  ```sh
+  $ python -m saver run-saver 'redis://localhost' 'rabbitmq://localhost' $queue_name 
+  ```
     
   - `api`
   
-  This is a program that runs on the API server (127.0.0.1:9000).
+  This is a program that runs the API server.
   
-    ```sh
-    $ python api.py
-    ```
+  ```sh
+  $ python -m api run-server --host '127.0.0.1' --port 5000 --database '127.0.0.1'
+  ```
   
   The API includes the following:
   
@@ -130,38 +139,20 @@ The following packages are provided:
   - `apicli`
   
   The API can be invoked through the CLI.
+  
   ```sh
   $ python -m apicli get-users
-…
-$ python -m apicli get-user 1
-…
-$ python -m apicli get-snapshots 1
-…
-$ python -m apicli get-snapshot 1 2
-…
-$ python -m apicli get-result 1 2 'pose'
-…
-```
+  …
+  $ python -m apicli get-user 1
+  …
+  $ python -m apicli get-snapshots 1
+  …
+  $ python -m apicli get-snapshot 1 2
+  …
+  $ python -m apicli get-result 1 2 'pose'
+  …
+  ```
 
 - The Web application.
 
-To run the Web server: `python web/app.py`.
-
-The main page URL is `http://127.0.0.1:7000/`.
-
-## Dockers
-```
-zeevi/server
-zeevi/user_parser
-zeevi/pose_parser
-zeevi/feelings_parser
-zeevi/color_image_parser
-zeevi/depth_image_parser
-zeevi/user_saver
-zeevi/pose_saver
-zeevi/feelings_saver
-zeevi/color_image_saver
-zeevi/depth_image_saver
-zeevi/api
-zeevi/web
-```
+To run the Web server: `python -m gui run-server --host 127.0.0.1 --port 8080 --api-host 127.0.0.1 --api-port 5000`.
