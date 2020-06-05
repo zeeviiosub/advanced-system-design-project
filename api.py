@@ -51,7 +51,7 @@ def handle_snapshots(user_id):
         snapshots = json.loads(r.hget('snapshots', user_id).decode('utf8'))
         snapshots_json = {}
         for key in snapshots:
-            snapshots_json[key] = snapshots
+            snapshots_json[key] = key
         return flask.jsonify({'snapshots': snapshots_json, 'error': None})
     except Exception as error:
         return flask.jsonify({'snapshots': None, 'error': error})
