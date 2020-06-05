@@ -1,6 +1,6 @@
 import datetime
 import struct
-from cortex_pb2 import ColorImage, DepthImage
+from utils.cortex_pb2 import ColorImage, DepthImage
 
 class Hello:
     def __init__(self, user_id, username, birth_date, gender):
