@@ -5,7 +5,7 @@
     ```sh
     $ git clone git@github.com:zeeviiosub/advanced-system-design-project.git
     ...
-    $ cd foobar/
+    $ cd advanced-system-design-project/
     ```
 
 2. Run the installation script and activate the virtual environment:
@@ -28,9 +28,11 @@
 ## Usage
 
 TO RUN EVERYTHING ON THE SERVER SIDE:
-```sh
-$ source run-pipeline.sh
-```
+
+
+    ```sh
+    $ run_pipeline.sh
+    ```
 
 The following packages are provided:
 
