@@ -47,4 +47,4 @@ def snapshot_page(user_id, snapshot_id):
         depth_image=depth_image
         )
 
-app.run(host='127.0.0.1', port=7000)
+app.run(host='127.0.0.1', port=8080)
