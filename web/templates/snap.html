@@ -2,10 +2,10 @@
     <head>
         <title>Man-Machine Interface -- {{ title }}</title>
     </head>
-    <h1>{{ title }}</h1>
     <a href="/{{ user_id }}">Back to user</a><br>
+    <h1>{{ title }}</h1>
     <body>
-        <table>
+        <table border="black">
             <tr>
                 <td>Translation:</td>
                 <td>{{ pose['translation'][0] }}</td>
@@ -20,13 +20,14 @@
                 <td>{{ pose['rotation'][3] }}</td>
             </tr>
             <tr>
+                <td>Feelings:</td>
                 <td>Hunger: {{ feelings['hunger'] }}</td>
                 <td>Thirst: {{ feelings['thirst'] }}</td>
                 <td>Exhaustion: {{ feelings['exhaustion'] }}</td>
                 <td>Happiness: {{ feelings['happiness'] }}</td>
             </tr>
         </table>
-        <table>
+        <table border="black">
             <tr><td><img src="{{ depth_image }}" /></td></tr>
             <tr><td><img src="{{ color_image }}" /></td></tr>
         </table>

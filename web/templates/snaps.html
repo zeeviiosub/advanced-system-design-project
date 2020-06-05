@@ -3,10 +3,11 @@
         <title>{{ title }}</title>
     </head>
     <body>
+        <a href="/">Back to main</a>
         <h1>{{ title }}</h1>
         {{ username }}'s birth date: {{ birth_date }}<br>
-        {{ username }}'s gender: {{ gender }}<br>
-        <a href="/">Back to main</a>
+        {{ username }}'s gender: {{ gender }}<br><br>
+        {{ snapshots_num }} snapshots:
         <table>
             {% for snapshot in snapshots: %}
             <tr><td>
