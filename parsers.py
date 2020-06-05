@@ -58,7 +58,6 @@ def parse_user(context, user_bytes):
 class Context:
     def __init__(self, user_id):
         import pathlib
-        self.directory = pathlib.Path('/home/user/advanced-system-design-project')
         self.user_id = user_id
 
 
@@ -86,15 +85,17 @@ def callback(field, queue_address):
     return callback_method
 
 def parse(field, data):
-    parsers[field](data)
+    context = Context(int.from_bytes(data[0:8], 'little'))
+    return parsers[field](context, data)
 
 @main.command()
 @click.argument('field')
 @click.argument('path')
-def parse(field, path):
+def parse_file(field, path):
     with open(path, 'rb') as f:
         data = f.read()
-    parsers[field](data)
+    context = Context(int.from_bytes(data[0:8], 'little'))
+    return parsers[field](context, data)
 
 @main.command()
 @click.argument('field')
