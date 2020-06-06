@@ -76,7 +76,7 @@ The following packages are provided:
   It can also be invoked in the command line.
   
   ```sh
-  $ python -m parsers parse 'pose' 'snapshot.raw'
+  $ python -m parsers parse-file 'pose' 'snapshot.raw'
   ```
   
   Where `'snapshot.raw'` is a file containing raw data to be parsed. The result is printed to the standard output.
