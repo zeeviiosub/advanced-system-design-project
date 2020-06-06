@@ -95,7 +95,7 @@ def parse_file(field, path):
     with open(path, 'rb') as f:
         data = f.read()
     context = Context(int.from_bytes(data[0:8], 'little'))
-    return parsers[field](context, data)
+    click.echo(json.dumps(parsers[field](context, data)))
 
 @main.command()
 @click.argument('field')
