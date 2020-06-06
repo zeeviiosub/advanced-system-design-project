@@ -1,0 +1,6 @@
+FROM python
+ADD saver.py /
+RUN pip install click
+RUN pip install redis
+RUN pip install pika
+CMD ["python", "-m",  "saver", "run-saver", "127.0.0.1", "127.0.0.1"]

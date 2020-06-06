@@ -1,0 +1,7 @@
+FROM python
+ADD parsers.py /
+ADD utils /utils
+RUN pip install click
+RUN pip install pika
+RUN pip install protobuf
+CMD ["python", "-m",  "parsers", "run-parser", "feelings", "127.0.0.1"]

@@ -1,0 +1,7 @@
+FROM python
+ADD api.py /
+RUN pip install click
+RUN pip install flask
+RUN pip install redis
+EXPOSE 5000
+CMD ["python",  "-m", "api", "run-server"]

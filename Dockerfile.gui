@@ -1,0 +1,8 @@
+FROM python
+ADD gui.py /
+ADD web /web
+RUN pip install click
+RUN pip install flask
+RUN pip install requests
+EXPOSE 8080
+CMD ["python",  "-m", "gui", "run-server"]

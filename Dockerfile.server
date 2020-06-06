@@ -1,0 +1,12 @@
+FROM python
+ADD server.py /
+ADD utils /utils
+RUN pip install click
+RUN pip install pika
+RUN pip install pillow
+RUN pip install protobuf
+RUN pip install matplotlib
+RUN mkdir /web
+RUN mkdir /web/static
+EXPOSE 8000
+CMD ["python",  "-m", "server", "run-server", "--host", "0.0.0.0", "127.0.0.1"]
