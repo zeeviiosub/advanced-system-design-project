@@ -1,3 +1,4 @@
+source cleanup.sh
 docker run -d --net host rabbitmq
 docker run -d --net host redis
 docker build -t api -f Dockerfile.api .
