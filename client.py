@@ -7,7 +7,6 @@ import socket
 import reader
 
 
-
 def upload_sample_(host, port, path):
     try:
         address = (host, port)

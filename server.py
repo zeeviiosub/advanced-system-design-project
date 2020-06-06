@@ -92,7 +92,7 @@ def server_iteration(listener, publish):
     handler = Handler(client, data_dir, publish)
     handler.start()
 
-def f_run_server(host, port, publish):
+def run_cortex_server(host, port, publish):
     lsnr = Listener(host=host, port=int(port))
     lsnr.start()
     while True:
@@ -100,11 +100,11 @@ def f_run_server(host, port, publish):
     
 
 @main.command()
-@click.option('--host', default='127.0.0.1')
-@click.option('--port', default=8000)
+@click.option('--host', '-h', default='127.0.0.1')
+@click.option('--port', '-p', default=8000)
 @click.argument('queue')
 def run_server(host, port, queue):
-    f_run_server(host, port, publish_on_queue(queue))
+    run_cortex_server(host, port, publish_on_queue(queue))
 
 
 if __name__ == '__main__':

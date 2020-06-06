@@ -1,14 +1,9 @@
 import click
 import threading
-import pathlib
-from utils.protocol import Hello, Config, Snapshot
-from PIL import Image
-import utils.cortex_pb2
+from utils.protocol import Hello, Snapshot
 import json
 import pika
 import struct
-from multiprocessing import Process
-from urllib.parse import urlparse
 
 image_data_dir = '../../static'
 
@@ -57,13 +52,13 @@ def parse_user(context, user_bytes):
 
 class Context:
     def __init__(self, user_id):
-        import pathlib
         self.user_id = user_id
 
 
 def callback(field, queue_address):
     def callback_method(channel, method, properties, body):
         try:
+            print('got to callback_method')
             context = Context(int.from_bytes(body[0:8], 'little'))
             result = parsers[field](context, body)
             params = pika.ConnectionParameters(queue_address)
@@ -101,7 +96,6 @@ def parse_file(field, path):
 @click.argument('field')
 @click.argument('queue_address')
 def run_parser(field, queue_address):
-    
     params = pika.ConnectionParameters(queue_address)
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
@@ -111,6 +105,7 @@ def run_parser(field, queue_address):
         auto_ack=True,
         on_message_callback=callback(field, queue_address)
     )
+    print('start consuming')
     channel.start_consuming()
 
 

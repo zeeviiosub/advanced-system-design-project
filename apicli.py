@@ -2,7 +2,7 @@ import requests
 import click
 
 default_host = '127.0.0.1'
-default_port = '9000'
+default_port = '5000'
 
 @click.group()
 def main():

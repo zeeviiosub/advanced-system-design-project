@@ -3,7 +3,6 @@ import click
 import pika
 import json
 import threading
-from urllib.parse import urlparse
 
 @click.group()
 def main():
@@ -11,8 +10,8 @@ def main():
 
 class Saver():
 
-    def __init__(self, db_url):
-        self.r = redis.from_url(db_url)
+    def __init__(self, db_hostname):
+        self.r = redis.Redis(db_hostname)
 
     def save_field(self, field, data_as_json_string):
         data = json.loads(data_as_json_string)
@@ -92,15 +91,10 @@ class SaverThread(threading.Thread):
 @click.argument('database')
 @click.argument('queue')
 def run_saver(database, queue):
-    queue_url = urlparse(queue)
-    if queue_url.scheme != 'rabbitmq':
-        click.echo('Wrong message queue. Only rabbitmq is supported.')
-    if queue_url.port != 5672:
-        click.echo('Wrong port. The port for rabbitmq is 5672.')
     threads = {}
     queue_names = ['save_user', 'save_pose', 'save_feelings', 'save_color_image', 'save_depth_image']
     for queue_name in queue_names:
-        threads[queue_name] = SaverThread(queue_url.hostname, database, queue_name)
+        threads[queue_name] = SaverThread(queue, database, queue_name)
         threads[queue_name].start()
     for queue_name in queue_names:
         threads[queue_name].join()
