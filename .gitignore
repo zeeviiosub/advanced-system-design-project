@@ -1,2 +1,3 @@
 web/static/*
 sample.mind.gz
+.env/*
