@@ -27,10 +27,9 @@
 
 ## Usage
 
-TO RUN EVERYTHING ON THE SERVER SIDE:
-
+**TO RUN EVERYTHING ON THE SERVER SIDE:**
 ```sh
-$ run_pipeline.sh
+$ source run-pipeline.sh
 ```
 The following packages are provided:
 
