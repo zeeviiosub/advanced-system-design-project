@@ -18,3 +18,4 @@ zipp==0.6.0
 click==7.1.2
 redis==3.4.1
 protobuf==3.11.3
+virtualenv==20.0.21
