@@ -157,5 +157,5 @@ The following packages are provided:
     This is a program that runs the Web server.
     
     ```sh
-    $ python -m gui run-server --host 127.0.0.1 --port 8080 --api-host 127.0.0.1 --api-port 5000`.
+    $ python -m gui run-server --host 127.0.0.1 --port 8080 --api-host 127.0.0.1 --api-port 5000
     ```
