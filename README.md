@@ -17,14 +17,6 @@
     [advanced-system-design-project] $ # you're good to go!
     ```
 
-3. To check that everything is working as expected, run the tests:
-
-
-    ``` sh
-    $ pytest tests/
-    ...
-    ```
-
 ## Usage
 
 **TO RUN EVERYTHING ON THE SERVER SIDE:**
@@ -84,6 +76,11 @@ The following packages are provided:
   
     ```sh
     $ python -m parsers run-parser 'pose' '127.0.0.1'
+    ```
+    
+    To test the `parsers` module, run:
+    ```sh
+    $ pytest tests/test_parsers.py
     ```
   
   
@@ -150,6 +147,12 @@ The following packages are provided:
     …
     $ python -m apicli get-result 1 2 'pose'
     …
+    ```
+    
+    To test the `apicli` module, run:
+    ```sh
+    $ docker run -d -p 6379:6379 redis
+    $ pytest tests/test_apicli.py
     ```
 
 - `gui`
