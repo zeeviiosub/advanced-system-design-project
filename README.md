@@ -11,8 +11,6 @@
 2. Run the installation script and activate the virtual environment:
 
     ```sh
-    $ pip install virtualenv
-    ...
     $ ./scripts/install.sh
     ...
     $ source .env/bin/activate
